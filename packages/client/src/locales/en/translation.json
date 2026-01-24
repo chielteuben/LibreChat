@@ -1,5 +1,9 @@
 {
   "com_ui_cancel": "Cancel",
+  "com_ui_timing_info": "Response timing information",
+  "com_ui_total_tokens": "Total tokens",
+  "com_ui_tokens_per_second": "Tokens per second",
+  "com_ui_generation_time": "Generation time",
   "com_ui_no_options": "No options available",
   "com_ui_delete_selected_items": "Delete selected items",
   "com_ui_filter_by": "Filter by {{title}}",

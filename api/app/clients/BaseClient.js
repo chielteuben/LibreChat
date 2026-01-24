@@ -783,6 +783,28 @@ class BaseClient {
           model: responseMessage.model,
         });
       }
+
+      // Merge calculated token counts into timing metadata if timing info exists
+      // This enables tokens/s calculation even when API doesn't return usage_metadata
+      if (responseMessage.metadata?.timingInfo?.generationTimeMs > 0) {
+        const timingInfo = responseMessage.metadata.timingInfo;
+
+        // Use API usage if available, otherwise use calculated values
+        if (timingInfo.promptTokens === undefined && promptTokens) {
+          timingInfo.promptTokens = promptTokens;
+        }
+        if (timingInfo.completionTokens === undefined && completionTokens) {
+          timingInfo.completionTokens = completionTokens;
+        }
+
+        // Calculate total and tokens/s if we now have completion tokens
+        if (timingInfo.promptTokens !== undefined || timingInfo.completionTokens !== undefined) {
+          timingInfo.totalTokens = (timingInfo.promptTokens || 0) + (timingInfo.completionTokens || 0);
+        }
+        if (timingInfo.completionTokens && timingInfo.completionTokens > 0) {
+          timingInfo.tokenPerSecond = (timingInfo.completionTokens / timingInfo.generationTimeMs) * 1000;
+        }
+      }
     }
 
     if (userMessagePromise) {

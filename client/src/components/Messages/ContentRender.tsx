@@ -7,6 +7,7 @@ import { useAttachments, useLocalize, useMessageActions, useContentMetadata } fr
 import ContentParts from '~/components/Chat/Messages/Content/ContentParts';
 import PlaceholderRow from '~/components/Chat/Messages/ui/PlaceholderRow';
 import SiblingSwitch from '~/components/Chat/Messages/SiblingSwitch';
+import MessageTimings from '~/components/Chat/Messages/MessageTimings';
 import HoverButtons from '~/components/Chat/Messages/HoverButtons';
 import MessageIcon from '~/components/Chat/Messages/MessageIcon';
 import SubRow from '~/components/Chat/Messages/SubRow';
@@ -162,6 +163,7 @@ const ContentRender = memo(
                 content={msg.content as Array<TMessageContentParts | undefined>}
               />
             </div>
+            {!msg.isCreatedByUser && <MessageTimings message={msg} className="mt-1 mb-0.5" />}
             {hasNoChildren && effectiveIsSubmitting ? (
               <PlaceholderRow />
             ) : (

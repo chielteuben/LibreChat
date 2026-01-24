@@ -3,6 +3,7 @@ import type { TMessageProps } from '~/common';
 import MinimalHoverButtons from '~/components/Chat/Messages/MinimalHoverButtons';
 import MessageContent from '~/components/Chat/Messages/Content/MessageContent';
 import SearchContent from '~/components/Chat/Messages/Content/SearchContent';
+import MessageTimings from '~/components/Chat/Messages/MessageTimings';
 import SiblingSwitch from '~/components/Chat/Messages/SiblingSwitch';
 import SubRow from '~/components/Chat/Messages/SubRow';
 import { fontSizeAtom } from '~/store/fontSize';
@@ -104,6 +105,7 @@ export default function Message(props: TMessageProps) {
                   </MessageContext.Provider>
                 </div>
               </div>
+              {!message?.isCreatedByUser && <MessageTimings message={message!} className="mt-1 mb-0.5" />}
               <SubRow classes="text-xs">
                 <SiblingSwitch
                   siblingIdx={siblingIdx}

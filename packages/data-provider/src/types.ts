@@ -17,6 +17,23 @@ export * from './schemas';
 
 export type TMessages = TMessage[];
 
+/**
+ * Timing information for LLM responses.
+ * Contains token counts (from API usage_metadata or estimated) and generation time.
+ */
+export type TTimingInfo = {
+  /** Tokens generated per second */
+  tokenPerSecond?: number;
+  /** Total generation time in milliseconds */
+  generationTimeMs?: number;
+  /** Number of prompt/input tokens */
+  promptTokens?: number;
+  /** Number of completion/output tokens */
+  completionTokens?: number;
+  /** Total tokens (prompt + completion) */
+  totalTokens?: number;
+};
+
 /* TODO: Cleanup EndpointOption types */
 export type TEndpointOption = Pick<
   TConversation,

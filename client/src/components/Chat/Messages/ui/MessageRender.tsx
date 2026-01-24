@@ -6,6 +6,7 @@ import type { TMessageProps, TMessageIcon } from '~/common';
 import MessageContent from '~/components/Chat/Messages/Content/MessageContent';
 import PlaceholderRow from '~/components/Chat/Messages/ui/PlaceholderRow';
 import SiblingSwitch from '~/components/Chat/Messages/SiblingSwitch';
+import MessageTimings from '~/components/Chat/Messages/MessageTimings';
 import HoverButtons from '~/components/Chat/Messages/HoverButtons';
 import MessageIcon from '~/components/Chat/Messages/MessageIcon';
 import { useLocalize, useMessageActions, useContentMetadata } from '~/hooks';
@@ -167,6 +168,7 @@ const MessageRender = memo(
                 />
               </MessageContext.Provider>
             </div>
+            {!msg.isCreatedByUser && <MessageTimings message={msg} className="mt-1 mb-0.5" />}
             {hasNoChildren && effectiveIsSubmitting ? (
               <PlaceholderRow />
             ) : (

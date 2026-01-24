@@ -775,8 +775,50 @@ class AgentClient extends BaseClient {
     }
   }
 
+  /**
+   * Builds timing information from collected usage data.
+   * @param {number} generationTimeMs - Time taken for generation in milliseconds
+   * @returns {Object|undefined} - Timing info object or undefined if no data
+   */
+  buildTimingInfo(generationTimeMs) {
+    const usage = this.usage || {};
+    const timingInfo = {};
+    let hasData = false;
+
+    // Extract token counts from usage
+    if (typeof usage.input_tokens === 'number') {
+      timingInfo.promptTokens = usage.input_tokens;
+      hasData = true;
+    }
+
+    if (typeof usage.output_tokens === 'number') {
+      timingInfo.completionTokens = usage.output_tokens;
+      hasData = true;
+    }
+
+    // Calculate total tokens
+    if (timingInfo.promptTokens !== undefined || timingInfo.completionTokens !== undefined) {
+      timingInfo.totalTokens = (timingInfo.promptTokens || 0) + (timingInfo.completionTokens || 0);
+    }
+
+    // Add generation time and calculate tokens/second
+    if (generationTimeMs > 0) {
+      timingInfo.generationTimeMs = generationTimeMs;
+      hasData = true;
+
+      // Calculate tokens per second from completion tokens and generation time
+      if (timingInfo.completionTokens && timingInfo.completionTokens > 0) {
+        timingInfo.tokenPerSecond = (timingInfo.completionTokens / generationTimeMs) * 1000;
+      }
+    }
+
+    return hasData ? { timingInfo } : undefined;
+  }
+
   /** @type {sendCompletion} */
   async sendCompletion(payload, opts = {}) {
+    const startTime = Date.now();
+
     await this.chatCompletion({
       payload,
       onProgress: opts.onProgress,
@@ -784,8 +826,13 @@ class AgentClient extends BaseClient {
       abortController: opts.abortController,
     });
 
+    const endTime = Date.now();
+    const generationTimeMs = endTime - startTime;
+
     const completion = filterMalformedContentParts(this.contentParts);
-    return { completion };
+    const metadata = this.buildTimingInfo(generationTimeMs);
+
+    return { completion, metadata };
   }
 
   /**
