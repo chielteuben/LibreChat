@@ -13,11 +13,12 @@ const mongoSanitize = require('express-mongo-sanitize');
 const {
   isEnabled,
   ErrorController,
+  memoryDiagnostics,
   performStartupChecks,
   handleJsonParseError,
-  initializeFileStorage,
   GenerationJobManager,
   createStreamServices,
+  initializeFileStorage,
 } = require('@librechat/api');
 const { connectDb, indexSync } = require('~/db');
 const initializeOAuthReconnectManager = require('./services/initializeOAuthReconnectManager');
@@ -134,8 +135,10 @@ const startServer = async () => {
   app.use('/oauth', routes.oauth);
   /* API Endpoints */
   app.use('/api/auth', routes.auth);
+  app.use('/api/admin', routes.adminAuth);
   app.use('/api/actions', routes.actions);
   app.use('/api/keys', routes.keys);
+  app.use('/api/api-keys', routes.apiKeys);
   app.use('/api/user', routes.user);
   app.use('/api/search', routes.search);
   app.use('/api/messages', routes.messages);
@@ -199,6 +202,11 @@ const startServer = async () => {
     const streamServices = createStreamServices();
     GenerationJobManager.configure(streamServices);
     GenerationJobManager.initialize();
+
+    const inspectFlags = process.execArgv.some((arg) => arg.startsWith('--inspect'));
+    if (inspectFlags || isEnabled(process.env.MEM_DIAG)) {
+      memoryDiagnostics.start();
+    }
   });
 };
 
@@ -246,6 +254,15 @@ process.on('uncaughtException', (err) => {
         stack: err.stack,
       },
     );
+    return;
+  }
+
+  if (isEnabled(process.env.CONTINUE_ON_UNCAUGHT_EXCEPTION)) {
+    logger.error('Unhandled error encountered. The app will continue running.', {
+      name: err?.name,
+      message: err?.message,
+      stack: err?.stack,
+    });
     return;
   }
 

@@ -10,12 +10,28 @@ const {
   messageUserLimiter,
 } = require('~/server/middleware');
 const { saveMessage } = require('~/models');
+const openai = require('./openai');
+const responses = require('./responses');
 const { v1 } = require('./v1');
 const chat = require('./chat');
 
 const { LIMIT_MESSAGE_IP, LIMIT_MESSAGE_USER } = process.env ?? {};
 
 const router = express.Router();
+
+/**
+ * Open Responses API routes (API key authentication handled in route file)
+ * Mounted at /agents/v1/responses (full path: /api/agents/v1/responses)
+ * NOTE: Must be mounted BEFORE /v1 to avoid being caught by the less specific route
+ * @see https://openresponses.org/specification
+ */
+router.use('/v1/responses', responses);
+
+/**
+ * OpenAI-compatible API routes (API key authentication handled in route file)
+ * Mounted at /agents/v1 (full path: /api/agents/v1/chat/completions)
+ */
+router.use('/v1', openai);
 
 router.use(requireJwtAuth);
 router.use(checkBan);
@@ -45,6 +61,10 @@ router.get('/chat/stream/:streamId', async (req, res) => {
       error: 'Stream not found',
       message: 'The generation job does not exist or has expired.',
     });
+  }
+
+  if (job.metadata?.userId && job.metadata.userId !== req.user.id) {
+    return res.status(403).json({ error: 'Unauthorized' });
   }
 
   res.setHeader('Content-Encoding', 'identity');
